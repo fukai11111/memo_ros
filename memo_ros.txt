@@ -1,0 +1,276 @@
+sudo apt update
+
+sudo apt upgrade
+
+
+
+apt list --installed
+
+apt list --installed | grep joy
+
+
+
+sudo apt install picocom
+
+sudo apt install can-utils
+
+sudo apt install ros-humble-ros2-socketcan
+
+sudo apt install ipython3
+
+
+
+rqt_graph
+
+------------------------------------------------------------
+
+
+sudo picocom /dev/ttyACM0 --baud 9600
+
+
+------------------------------------------------------------
+
+
+ip link show
+	1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+	    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+	2: wlp0s20f3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP mode DORMANT group default qlen 1000
+	    link/ether f8:b5:4d:49:91:0c brd ff:ff:ff:ff:ff:ff
+	3: can0: <NOARP,ECHO> mtu 16 qdisc noop state DOWN mode DEFAULT group default qlen 10
+	    link/can 
+
+sudo ip link set can0 type can bitrate 500000
+
+sudo ip link set can0 up
+
+sudo ip link set can0 type can bitrate 500000
+
+ip link show
+	1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+	    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+	2: wlp0s20f3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP mode DORMANT group default qlen 1000
+	    link/ether f8:b5:4d:49:91:0c brd ff:ff:ff:ff:ff:ff
+	3: can0: <NOARP,UP,LOWER_UP,ECHO> mtu 16 qdisc pfifo_fast state UP mode DEFAULT group default qlen 10
+	    link/can 
+
+
+------------------------------------------------------------
+
+
+ros2 launch ros2_socketcan socket_can_sender.launch.py
+	[INFO] [launch]: All log files can be found below /home/ssd2/.ros/log/2023-08-03-01-13-25-389046-ssd2-desktop-33306
+	[INFO] [launch]: Default logging verbosity is set to INFO
+	[INFO] [socket_can_sender_node_exe-1]: process started with pid [33318]
+	[socket_can_sender_node_exe-1] [INFO] [1690992805.863497909] [socket_can_sender]: interface: can0
+	[socket_can_sender_node_exe-1] [INFO] [1690992805.863557340] [socket_can_sender]: timeout(s): 0.010000
+
+
+------------------------------------------------------------
+
+cansend 123#DEADBEEF
+
+
+candump can0,0:0,#FFFFFFFF
+	  can0  123   [4]  DE AD BE EF
+	  can0  133   [4]  DF AE BF F0
+	  can0  200   [4]  DE AD BE EF
+	  can0  210   [4]  DF AE BF F0
+
+	  
+candump can0,0:0,#FFFFFFFF
+	  can0  200   [4]  DE AD BE EF
+	  can0  210   [4]  DF AE BF F0
+
+
+------------------------------------------------------------
+
+
+bluetoothctl
+	Agent registered
+	[CHG] Controller F8:B5:4D:49:91:10 Discovering: yes
+	[NEW] Device 3C:EE:61:99:C1:AF 3C-EE-61-99-C1-AF
+	[CHG] Controller F8:B5:4D:49:91:10 Discoverable: yes
+	
+ros2 run joy joy_node
+[INFO] [1690992634.673817668] [joy_node]: Opened joystick: Sony PLAYSTATION(R)3 Controller.  deadzone: 0.050000
+
+
+------------------------------------------------------------
+
+
+ros2 topic list
+	/joy
+	/joy/set_feedback
+	/parameter_events
+	/rosout
+	/socket_can_sender/transition_event
+	/to_can_bus
+	
+ros2 topic info /to_can_bus
+	Type: can_msgs/msg/Frame
+	Publisher count: 0
+	Subscription count: 1
+	ssd2@ssd2-desktop:~$ ros2 interface show can_msgs/msg/Frame
+	std_msgs/Header header
+		builtin_interfaces/Time stamp
+			int32 sec
+			uint32 nanosec
+		string frame_id
+	uint32 id
+	bool is_rtr
+	bool is_extended
+	bool is_error
+	uint8 dlc
+	uint8[8] data
+
+ipython3
+	Python 3.10.12 (main, Jun 11 2023, 05:26:28) [GCC 11.4.0]
+	Type 'copyright', 'credits' or 'license' for more information
+	IPython 7.31.1 -- An enhanced Interactive Python. Type '?' for help.
+
+	In [1]: print("Hello")
+	Hello
+
+	In [2]: import can_mss.msg
+	---------------------------------------------------------------------------
+	ModuleNotFoundError                       Traceback (most recent call last)
+	<ipython-input-2-0faf9ea09403> in <module>
+	----> 1 import can_mss.msg
+
+	ModuleNotFoundError: No module named 'can_mss'
+
+	In [3]: import can_msgs.msg
+
+	In [4]: can_msgs.msg.Frame(id=0x200, dlc=4, data=bytearray([0xDE, 0xAD, 0xBE, 0xEF]))
+	---------------------------------------------------------------------------
+	AssertionError                            Traceback (most recent call last)
+	<ipython-input-4-cd0d59bcb33c> in <module>
+	----> 1 can_msgs.msg.Frame(id=0x200, dlc=4, data=bytearray([0xDE, 0xAD, 0xBE, 0xEF]))
+
+	/opt/ros/humble/local/lib/python3.10/dist-packages/can_msgs/msg/_frame.py in __init__(self, **kwargs)
+	    106             self.data = numpy.zeros(8, dtype=numpy.uint8)
+	    107         else:
+	--> 108             self.data = numpy.array(kwargs.get('data'), dtype=numpy.uint8)
+	    109             assert self.data.shape == (8, )
+	    110 
+
+	/opt/ros/humble/local/lib/python3.10/dist-packages/can_msgs/msg/_frame.py in data(self, value)
+	    252             assert value.dtype == numpy.uint8, \
+	    253                 "The 'data' numpy.ndarray() must have the dtype of 'numpy.uint8'"
+	--> 254             assert value.size == 8, \
+	    255                 "The 'data' numpy.ndarray() must have a size of 8"
+	    256             self._data = value
+
+	AssertionError: The 'data' numpy.ndarray() must have a size of 8
+
+	In [5]: can_msgs.msg.Frame(id=0x200, dlc=4, data=[0xDE, 0xAD, 0xBE, 0xEF])
+	---------------------------------------------------------------------------
+	AssertionError                            Traceback (most recent call last)
+	<ipython-input-5-5d97bf4e1bbb> in <module>
+	----> 1 can_msgs.msg.Frame(id=0x200, dlc=4, data=[0xDE, 0xAD, 0xBE, 0xEF])
+
+	/opt/ros/humble/local/lib/python3.10/dist-packages/can_msgs/msg/_frame.py in __init__(self, **kwargs)
+	    106             self.data = numpy.zeros(8, dtype=numpy.uint8)
+	    107         else:
+	--> 108             self.data = numpy.array(kwargs.get('data'), dtype=numpy.uint8)
+	    109             assert self.data.shape == (8, )
+	    110 
+
+	/opt/ros/humble/local/lib/python3.10/dist-packages/can_msgs/msg/_frame.py in data(self, value)
+	    252             assert value.dtype == numpy.uint8, \
+	    253                 "The 'data' numpy.ndarray() must have the dtype of 'numpy.uint8'"
+	--> 254             assert value.size == 8, \
+	    255                 "The 'data' numpy.ndarray() must have a size of 8"
+	    256             self._data = value
+
+	AssertionError: The 'data' numpy.ndarray() must have a size of 8
+
+	In [6]: can_msgs.msg.Frame(id=0x200, dlc=4, data=[0xDE, 0xAD, 0xBE, 0xEF, 0, 0, 0, 0])
+	Out[6]: can_msgs.msg.Frame(header=std_msgs.msg.Header(stamp=builtin_interfaces.msg.Time(sec=0, nanosec=0), frame_id=''), id=512, is_rtr=False, is_extended=False, is_error=False, dlc=4, data=array([222, 173, 190, 239,   0,   0,   0,   0], dtype=uint8))
+
+	In [7]: frame = can_msgs.msg.Frame(id=0x200, dlc=4, data=[0xDE, 0xAD, 0xBE, 0xEF, 0, 0, 0, 0])
+
+	In [8]: frame
+	Out[8]: can_msgs.msg.Frame(header=std_msgs.msg.Header(stamp=builtin_interfaces.msg.Time(sec=0, nanosec=0), frame_id=''), id=512, is_rtr=False, is_extended=False, is_error=False, dlc=4, data=array([222, 173, 190, 239,   0,   0,   0,   0], dtype=uint8))
+
+	In [9]: import rclpy
+
+	In [10]: node = rclpy.Node('my_node')
+	---------------------------------------------------------------------------
+	AttributeError                            Traceback (most recent call last)
+	<ipython-input-10-a3efb9452fb8> in <module>
+	----> 1 node = rclpy.Node('my_node')
+
+	AttributeError: module 'rclpy' has no attribute 'Node'
+
+	In [11]: import rclpy.node
+
+	In [12]: node = rclpy.node.Node('my_node')
+	---------------------------------------------------------------------------
+	NotInitializedException                   Traceback (most recent call last)
+	<ipython-input-12-01aeae4df967> in <module>
+	----> 1 node = rclpy.node.Node('my_node')
+
+	/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/node.py in __init__(self, node_name, context, cli_args, namespace, use_global_arguments, enable_rosout, start_parameter_services, parameter_overrides, allow_undeclared_parameters, automatically_declare_parameters_from_overrides)
+	    170         namespace = namespace or ''
+	    171         if not self._context.ok():
+	--> 172             raise NotInitializedException('cannot create node')
+	    173         with self._context.handle:
+	    174             try:
+
+	NotInitializedException: ('rclpy.init() has not been called', 'cannot create node')
+
+	In [13]: rclpy.init()
+
+	In [14]: node = rclpy.node.Node('my_node')
+
+	In [15]: node
+	Out[15]: <rclpy.node.Node at 0x7fc77f331e10>
+
+	In [16]: pub = node.create_publisher(can_msgs.msg.Frame, 'to_can_bus', 10)
+
+	In [17]: pub.publish(frame)
+
+
+------------------------------------------------------------
+
+
+ros2 interface show can_msgs/msg/Frame
+	std_msgs/Header header
+		builtin_interfaces/Time stamp
+			int32 sec
+			uint32 nanosec
+		string frame_id
+	uint32 id
+	bool is_rtr
+	bool is_extended
+	bool is_error
+	uint8 dlc
+	uint8[8] data
+
+
+------------------------------------------------------------
+
+
+ros2 topic echo /to_can_bus
+	header:
+	  stamp:
+	    sec: 0
+	    nanosec: 0
+	  frame_id: ''
+	id: 512
+	is_rtr: false
+	is_extended: false
+	is_error: false
+	dlc: 4
+	data:
+	- 222
+	- 173
+	- 190
+	- 239
+	- 0
+	- 0
+	- 0
+	- 0
+	---
+
