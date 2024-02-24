@@ -14,7 +14,7 @@ sudo apt install picocom
 
 sudo apt install can-utils
 
-sudo apt install ros-humble-ros2-socketcan
+sudo apt install ros-iron-ros2-socketcan
 
 sudo apt install ipython3
 
